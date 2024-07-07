@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Clipboard Sharing</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/x-icon" sizes="32x32" href="/images/favicon.ico">
+        <link rel="icon" type="image/png" sizes="180x180" href="/images/apple-touch-icon.png">
+        <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/images/apple-touch-icon.png">
+        <script src="index.js"></script>
+        <style>
+            body {
+                background-color: #31373F;
+            }
+
+            a,
+            button {
+                background-color: #005AA7;
+                color: #BBBBBB;
+                border-radius: 10vw;
+                border: 0.2em solid #002F58;
+            }
+
+            #topbar {
+                height: 2vh;
+            }
+
+            #topbar a {
+                padding: 3px 10px 3px 10px;
+                position: absolute;
+                right: 3vw;
+                text-decoration: none;
+            }
+
+            #content {
+                display: flex;
+                flex-wrap: wrap;
+                height: 70vh;
+                justify-content: space-around;
+            }
+
+            h1 {
+                color: #DDDDDD;
+                text-align: center;
+            }
+
+            #content button {
+                width: 80vw;
+                height: 30vh;
+                font-size: 2em;
+            }
+
+            progress {
+                width: 40vw;
+            }
+
+            #image {
+                max-width: 80vw;
+                max-height: 30vh;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="topbar">
+            <a href="file/index.html">File</a>
+        </div>
+        <h1>Clipboard Sharing</h1>
+        <div id="content">
+            <div>
+                <button id="preflight" type="button" onclick="preflight()">
+                    Preflight
+                </button>
+            </div>
+            <div id="paste-container">
+                <button id="paste" type="button" onclick="paste()">
+                    Paste
+                </button>
+            </div>
+        </div>
+    </body>
+</html>

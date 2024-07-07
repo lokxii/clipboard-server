@@ -1,0 +1,4 @@
+#!/bin/bash
+
+wl-paste
+exit 200

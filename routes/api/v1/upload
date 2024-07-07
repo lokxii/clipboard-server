@@ -1,0 +1,32 @@
+#!/bin/bash
+
+method=$(cat $1 | head -1 | awk '{ print $1 }')
+content_length=$(grep Content-Length $1 | cut -d' ' -f2)
+
+IFS= read -rd $'\r\n' boundary && read
+IFS= read -rd $'\r\n' content_disposition && read
+IFS= read -rd $'\r\n' content_type && read
+IFS= read -rd $'\r\n' && read
+
+header_length=$(
+    printf "%s\r\n%s\r\n%s\r\n\r\n" \
+        "$boundary" \
+        "$content_disposition" \
+        "$content_type" | wc -c)
+
+footer_length=$(printf "\r\n%s--\r\n" "$boundary" | wc -c)
+
+((content_length -= $header_length + $footer_length))
+
+filename=$(echo "$content_disposition" | sed 's/.*filename="\(.*\)"/\1/')
+
+dd ibs=1 count=$content_length of=~/Downloads/"$filename" 2>/dev/null
+
+filetype=$(printf "%s" "$content_type" | cut -d' ' -f2 | tr '/' '-')
+if [[ ! -e ~/.local/share/icons/oxygen/256x256/mimetypes/$filetype.png ]]; then
+    filetype=$(echo "$filetype" | sed 's/\([^-]*\)-.*/\1-x-generic/')
+fi
+icon=~/.local/share/icons/oxygen/256x256/mimetypes/$filetype.png
+notify-send -t 2000 -i $icon "File Sharing" "Downloaded $filename to ~/Downloads folder"
+
+exit 200

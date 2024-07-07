@@ -1,0 +1,10 @@
+#!/bin/bash
+
+BASE=$2
+
+wl-copy
+
+icon=$BASE/routes/images/favicon.jpg
+notify-send -t 2000 -i "$icon" "Clipboard Server" "Pasted from iPhone"
+
+exit 200

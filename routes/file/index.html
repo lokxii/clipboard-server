@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>File Sharing</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" type="image/x-icon" sizes="32x32" href="/images/favicon.ico">
+        <link rel="icon" type="image/png" sizes="180x180" href="/images/apple-touch-icon.png">
+        <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/images/apple-touch-icon.png">
+        <script src="index.js"></script>
+        <style>
+            body {
+                background-color: #31373F;
+            }
+
+            form {
+                display: none;
+            }
+
+            a,
+            button {
+                background-color: #005AA7;
+                color: #BBBBBB;
+                border-radius: 10vw;
+                border: 0.2em solid #002F58;
+            }
+
+            #topbar {
+                height: 2vh;
+            }
+
+            #topbar a {
+                padding: 3px 10px 3px 10px;
+                position: absolute;
+                right: 3vw;
+                text-decoration: none;
+            }
+
+            #content {
+                display: flex;
+                flex-wrap: wrap;
+                height: 70vh;
+                justify-content: space-around;
+            }
+
+            h1 {
+                color: #DDDDDD;
+                text-align: center;
+            }
+
+            #content button {
+                width: 80vw;
+                height: 30vh;
+                font-size: 2em;
+            }
+
+            progress {
+                width: 40vw;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="topbar">
+            <a href="/index.html">Clipboard</a>
+        </div>
+        <h1>File Sharing</h1>
+        <div id="content">
+            <div class="container">
+                <form id="upload-form" action="/api/v1/upload" method="POST" enctype="multipart/form-data">
+                    <input type="file" id="form-select-file" name="file" />
+                </form>
+                <button id="select-file" type="button" onclick="select_file()">
+                    Select File
+                </button>
+            </div>
+            <div class="container">
+                <button id="download" type="button" onclick="download()">
+                    Download
+                </button>
+            </div>
+        </div>
+    </body>
+</html>

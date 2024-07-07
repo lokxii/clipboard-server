@@ -1,0 +1,13 @@
+#!/bin/bash
+
+base=$2
+to_upload=$(ls -t $base/tmp | head -1)
+[[ -n "$to_upload" ]] || exit 410
+
+cat "$to_upload"
+
+additional_headers=$3
+echo "Content-Disposition: attachment; filename=$(basename $to_upload)" >> $additional_headers
+echo "Content-Type: application/octet-stream" >> $additional_headers
+
+exit 200
