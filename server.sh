@@ -13,8 +13,11 @@ stop() {
 
 trap stop SIGINT
 
-echo "Start TLS proxy"
-stunnel $BASE/stunnel.conf
+echo "Starting TLS proxy"
+while ! stunnel $BASE/stunnel.conf; do
+    pgrep stunnel && break
+    sleep 1
+done
 
 echo "Start http server"
 ncat -lk 9001 -e "$BASE/router.sh"
