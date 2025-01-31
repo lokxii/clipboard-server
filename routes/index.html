@@ -2,14 +2,16 @@
 <html>
     <head>
         <title>Clipboard Sharing</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no" />
         <link rel="icon" type="image/x-icon" sizes="32x32" href="/images/favicon.ico">
-        <link rel="icon" type="image/png" sizes="180x180" href="/images/apple-touch-icon.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="/images/favicon-192.png">
         <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="/images/apple-touch-icon.png">
+        <link rel="manifest" href="/manifest.json" />
         <script src="index.js"></script>
         <style>
             body {
                 background-color: #31373F;
+                position: fixed;
             }
 
             a,
@@ -21,7 +23,8 @@
             }
 
             #topbar {
-                height: 2vh;
+                padding-top: 2vh;
+                height: 4vh;
             }
 
             #topbar a {
