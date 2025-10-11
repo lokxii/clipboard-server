@@ -13,15 +13,18 @@ function create_element(htmlStr) {
     return frag;
 }
 
+function preflight_fragment() {
+    return create_element(
+        '<button id="preflight" type="button" onclick="preflight()">' +
+            'Preflight' +
+        '</button>');
+}
+
 function preflight() {
-    const image_elem = document.getElementById("image");
-    if (image_elem !== null) {
-        image_elem.remove();
-    }
-    const download_elem = document.getElementById("download");
-    if (download_elem !== null) {
-        download_elem.remove();
-    }
+    // const image_elem = document.getElementById("image");
+    // if (image_elem !== null) {
+    //     image_elem.remove();
+    // }
 
     const uri = window.location + "api/v1/copy-from-clipboard";
     setTimeout(async () => {
@@ -40,7 +43,9 @@ function preflight() {
             return;
         }
         if (mime.startsWith("image/")) {
-            const fragment = create_element(`<img id="image" src="${uri}"/>`);
+            const fragment = create_element(
+                `<img id="image" src="${uri}" onclick="reset()"/>`
+            );
             document.getElementById("preflight").replaceWith(fragment);
             return;
         }
@@ -60,12 +65,13 @@ function copy() {
             })
         ])
 
-        let fragment = create_element(
-            '<button id="preflight" type="button" onclick="preflight()">' +
-                'Preflight' +
-            '</button>');
-        document.getElementById("copy").replaceWith(fragment);
+        document.getElementById("copy").replaceWith(preflight_fragment());
     });
+}
+
+function reset() {
+    const image_elem = document.getElementById("image");
+    image_elem.replaceWith(preflight_fragment());
 }
 
 function paste() {
