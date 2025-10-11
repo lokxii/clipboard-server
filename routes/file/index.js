@@ -30,7 +30,9 @@ function upload() {
         '<div>' +
             '<progress id="progress"></progress>' +
         '</div>');
-    document.getElementById("upload").append(fragment);
+    let uploadButton = document.getElementById("upload");
+    uploadButton.append(fragment);
+    uploadButton.disabled = true;
 
     let progress = document.getElementById("progress");
     let xhr = new XMLHttpRequest();
@@ -48,7 +50,7 @@ function upload() {
                 '<button id="select-file" type="button" onclick="select_file()">' +
                     'Select File' +
                 '</button>');
-            document.getElementById("upload").replaceWith(fragment);
+            uploadButton.replaceWith(fragment);
         } else {
             return;
         }
