@@ -18,10 +18,13 @@ trap stop SIGINT
 
 echo "Starting TLS proxy" >>$LOG
 echo "Using stunnel debug 6 config $BASE/stunnel.conf" >>$LOG
-while ! stunnel $BASE/stunnel.conf 2>>$LOG; do
+until stunnel $BASE/stunnel.conf 2>>$LOG; do
     pgrep stunnel && break
     sleep 1
 done
 
 echo "Start http server" >>$LOG
-ncat -lk 9001 -e "$BASE/router.sh" >>$LOG
+until ncat -lk 9001 -e "$BASE/router.sh" >>$LOG; do
+    echo "Restarting ncat" >>$LOG
+    sleep 1
+done
