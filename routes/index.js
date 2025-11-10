@@ -20,6 +20,30 @@ function preflight_fragment() {
         '</button>');
 }
 
+function paste_fragment() {
+    return create_element(
+        '<button id="paste" type="button" onclick="paste()">' +
+            'Paste' +
+        '</button>');
+}
+
+/**
+ * @param {string} uri
+ */
+function image_fragment(uri) {
+    return create_element(
+        `<img id="image" src="${uri}""/>`
+    );
+}
+
+function reset_fragment() {
+    return create_element(
+        '<button id="reset" type="button" onclick="reset()">' +
+            "Reset" +
+        '</button>'
+    )
+}
+
 function preflight() {
     // const image_elem = document.getElementById("image");
     // if (image_elem !== null) {
@@ -43,10 +67,8 @@ function preflight() {
             return;
         }
         if (mime.startsWith("image/")) {
-            const fragment = create_element(
-                `<img id="image" src="${uri}" onclick="reset()"/>`
-            );
-            document.getElementById("preflight").replaceWith(fragment);
+            document.getElementById("preflight").replaceWith(image_fragment(uri));
+            document.getElementById("paste").replaceWith(reset_fragment());
             return;
         }
     });
@@ -70,8 +92,8 @@ function copy() {
 }
 
 function reset() {
-    const image_elem = document.getElementById("image");
-    image_elem.replaceWith(preflight_fragment());
+    document.getElementById("reset").replaceWith(paste_fragment());
+    document.getElementById("image").replaceWith(preflight_fragment());
 }
 
 function paste() {
