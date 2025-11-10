@@ -2,3 +2,4 @@ to_upload/
 log/
 cert/
 stunnel.conf
+*.pem

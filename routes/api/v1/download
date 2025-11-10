@@ -1,13 +1,17 @@
 #!/bin/bash
 
 base=$2
-file="$(ls -t $base/to_upload | head -1)"
+file="$(find "$base"/to_upload/ -maxdepth 1 -type f -exec stat --printf '%Y %n\n' {} \; | \
+    sort -nr | \
+    head -1 | \
+    sed -n '{s/[^ ]\+ //; p}')"
 [[ -n "$file" ]] || exit 410
 
-cat $base/to_upload/"$file"
+cat "$file"
 
 additional_headers=$3
-echo "Content-Disposition: attachment; filename=$(basename $file)" >> $additional_headers
-echo "Content-Type: application/octet-stream" >> $additional_headers
+
+echo "Content-Disposition: attachment; filename=$(basename "$file")" >> "$additional_headers"
+echo "Content-Type: application/octet-stream" >> "$additional_headers"
 
 exit 200
