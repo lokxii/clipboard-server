@@ -16,7 +16,7 @@ function select_file() {
     elem.click();
     elem.addEventListener(
         "input",
-        (event) => {
+        (_) => {
             let fragment = create_element(
                 '<button id="upload" type="button" onclick="upload()">' +
                     'Upload<br>' + elem.files[0].name +
@@ -25,16 +25,36 @@ function select_file() {
         });
 }
 
-function upload() {
-    let fragment = create_element(
+function upload_progress_fragment() {
+    return create_element(
         '<div>' +
-            '<progress id="progress"></progress>' +
-        '</div>');
+            '<progress id="upload-progress"></progress>' +
+        '</div>'
+    );
+}
+
+function download_progress_fragment() {
+    return create_element(
+        '<div>' +
+            '<progress id="download-progress"></progress>' +
+        '</div>'
+    );
+}
+
+function select_file_fragment() {
+    return create_element(
+        '<button id="select-file" type="button" onclick="select_file()">' +
+            'Select File' +
+        '</button>'
+    );
+}
+
+function upload() {
     let uploadButton = document.getElementById("upload");
-    uploadButton.append(fragment);
+    uploadButton.append(upload_progress_fragment());
     uploadButton.disabled = true;
 
-    let progress = document.getElementById("progress");
+    let progress = document.getElementById("upload-progress");
     let xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/v1/upload");
     xhr.setRequestHeader("Content-Type", "multipart/form-data");
@@ -46,11 +66,7 @@ function upload() {
     xhr.addEventListener("loadend", () => {
         if (xhr.readyState === 4) {
             progress.remove();
-            fragment = create_element(
-                '<button id="select-file" type="button" onclick="select_file()">' +
-                    'Select File' +
-                '</button>');
-            uploadButton.replaceWith(fragment);
+            uploadButton.replaceWith(select_file_fragment);
         } else {
             return;
         }
@@ -60,9 +76,44 @@ function upload() {
 }
 
 function download() {
-    const fragment = create_element('<a id="download-link" href="/api/v1/download"></a>');
-    document.body.appendChild(fragment);
-    const e = document.getElementById("download-link");
-    e.click();
-    e.remove();
+    let downloadButton = document.getElementById("download");
+    downloadButton.append(download_progress_fragment());
+    download.disabled = true;
+
+    let progress = document.getElementById("download-progress");
+    let xhr = new XMLHttpRequest();
+    xhr.open("GET", "/api/v1/download");
+    xhr.responseType = "blob";
+    xhr.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+            progress.value = event.loaded / event.total;
+        }
+    });
+    xhr.addEventListener("loadend", () => {
+        if (xhr.readyState === 4) {
+            progress.remove();
+
+            /** @type {string} */
+            const url = URL.createObjectURL(xhr.response);
+
+            const disposition = xhr.getResponseHeader("Content-Disposition");
+            if (disposition == null) {
+                alert("Missing Content-disposition header");
+                return;
+            }
+
+            let filename = disposition.split(";", 2)[1];
+            filename = filename.trim().split("=", 2)[1];
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            a.click();
+            a.remove();
+        } else {
+            return;
+        }
+    });
+    xhr.send();
+
 }
