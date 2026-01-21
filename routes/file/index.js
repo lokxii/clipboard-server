@@ -1,3 +1,16 @@
+{
+    let elem = document.getElementById("form-select-file")
+    elem.addEventListener(
+        "input",
+        (_) => {
+            let fragment = create_element(
+                '<button id="upload" type="button" onclick="upload()">' +
+                    'Upload<br>' + elem.files[0].name +
+                '</button>');
+            document.getElementById("select-file").replaceWith(fragment);
+        });
+}
+
 /**
  * @param {string} htmlStr
  */
@@ -12,17 +25,7 @@ function create_element(htmlStr) {
 }
 
 function select_file() {
-    let elem = document.getElementById("form-select-file")
-    elem.click();
-    elem.addEventListener(
-        "input",
-        (_) => {
-            let fragment = create_element(
-                '<button id="upload" type="button" onclick="upload()">' +
-                    'Upload<br>' + elem.files[0].name +
-                '</button>');
-            document.getElementById("select-file").replaceWith(fragment);
-        });
+    document.getElementById("form-select-file").click();
 }
 
 function upload_progress_fragment() {
@@ -66,7 +69,7 @@ function upload() {
     xhr.addEventListener("loadend", () => {
         if (xhr.readyState === 4) {
             progress.remove();
-            uploadButton.replaceWith(select_file_fragment);
+            uploadButton.replaceWith(select_file_fragment());
         } else {
             return;
         }
