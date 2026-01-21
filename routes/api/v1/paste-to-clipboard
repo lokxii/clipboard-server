@@ -7,4 +7,4 @@ wl-copy
 icon=$BASE/routes/images/favicon.jpg
 notify-send -t 2000 -i "$icon" "Clipboard Server" "Pasted from iPhone"
 
-exit 200
+printf 200 > "$4"

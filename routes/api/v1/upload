@@ -1,7 +1,10 @@
 #!/bin/bash
 
-method=$(cat $1 | head -1 | awk '{ print $1 }')
-content_length=$(grep Content-Length $1 | cut -d' ' -f2)
+request=$1
+status_code=$4
+
+method=$(head -1 "$request" | awk '{ print $1 }')
+content_length=$(grep Content-Length "$request" | cut -d' ' -f2)
 
 IFS= read -rd $'\r\n' boundary && read
 IFS= read -rd $'\r\n' content_disposition && read
@@ -27,7 +30,8 @@ received_size=$(stat -c %s ~/Downloads/"$filename")
 if [[ $received_size -ne $content_length ]]; then
     notify-send -t 2000 -i dialog-error "File Sharing" "Failed downloading $filename"
     rm ~/Downloads/"$filename"
-    exit 400
+    printf 400 > "$status_code"
+    exit
 fi
 
 filetype=$(printf "%s" "$content_type" | cut -d' ' -f2 | tr '/' '-')
@@ -37,4 +41,4 @@ fi
 icon=~/.local/share/icons/oxygen/256x256/mimetypes/$filetype.png
 notify-send -t 2000 -i $icon "File Sharing" "Downloaded $filename to ~/Downloads folder"
 
-exit 200
+printf 200 > "$status_code"

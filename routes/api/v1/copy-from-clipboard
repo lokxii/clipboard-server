@@ -1,4 +1,4 @@
 #!/bin/bash
 
 wl-paste
-exit 200
+printf 200 > "$4"

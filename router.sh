@@ -7,9 +7,11 @@ REQUEST_FILE=$BASE/log/request_$SUFFIX
 BODY_FILE=$BASE/log/body_$SUFFIX
 SERVER_OUT_FILE=$BASE/log/server_out_$SUFFIX
 ADDITIONAL_HEADER=$BASE/log/additional_header_$SUFFIX
+STATUS_CODE_FILE=$BASE/log/status_code_$SUFFIX
 touch $BODY_FILE
 touch $SERVER_OUT_FILE
 touch $ADDITIONAL_HEADER
+touch $STATUS_CODE_FILE
 
 # get the header
 header=()
@@ -82,8 +84,8 @@ construct_body() {
         path=$SERVER_OUT_FILE
 
     elif [[ -x "$path" ]]; then
-        cat $BODY_FILE | $path "$REQUEST_FILE" "$BASE" "$ADDITIONAL_HEADER" > $SERVER_OUT_FILE
-        status=$?
+        cat $BODY_FILE | $path "$REQUEST_FILE" "$BASE" "$ADDITIONAL_HEADER" "$STATUS_CODE_FILE" > $SERVER_OUT_FILE
+        status=$(cat "$STATUS_CODE_FILE")
         path=$SERVER_OUT_FILE
     fi
 
