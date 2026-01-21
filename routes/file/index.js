@@ -3,9 +3,11 @@
     elem.addEventListener(
         "input",
         (_) => {
+            let filename = elem.files[0].name;
+            filename = filename.length < 15 ? filename : filename.slice(0, 15) + '...';
             let fragment = create_element(
                 '<button id="upload" type="button" onclick="upload()">' +
-                    'Upload<br>' + elem.files[0].name +
+                    'Upload<br>' + filename +
                 '</button>');
             document.getElementById("select-file").replaceWith(fragment);
         });
@@ -66,13 +68,18 @@ function upload() {
             progress.value = event.loaded / event.total;
         }
     });
-    xhr.addEventListener("loadend", () => {
+    xhr.addEventListener("loadend", (ev) => {
         if (xhr.readyState === 4) {
             progress.remove();
             uploadButton.replaceWith(select_file_fragment());
         } else {
+            console.log(xhr.readyState)
             return;
         }
+    });
+    xhr.addEventListener("error", () => {
+        alert("Upload failed");
+        return;
     });
     const formData = new FormData(document.getElementById("upload-form"));
     xhr.send(formData);
@@ -114,6 +121,7 @@ function download() {
             a.click();
             a.remove();
         } else {
+            console.log(xhr.readyState)
             return;
         }
     });

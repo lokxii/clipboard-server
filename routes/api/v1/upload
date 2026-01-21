@@ -22,6 +22,14 @@ filename=$(echo "$content_disposition" | sed 's/.*filename="\(.*\)"/\1/')
 
 dd ibs=1 count=$content_length of=~/Downloads/"$filename" 2>/dev/null
 
+received_size=$(stat -c %s ~/Downloads/"$filename")
+
+if [[ $received_size -ne $content_length ]]; then
+    notify-send -t 2000 -i dialog-error "File Sharing" "Failed downloading $filename"
+    rm ~/Downloads/"$filename"
+    exit 400
+fi
+
 filetype=$(printf "%s" "$content_type" | cut -d' ' -f2 | tr '/' '-')
 if [[ ! -e ~/.local/share/icons/oxygen/256x256/mimetypes/$filetype.png ]]; then
     filetype=$(echo "$filetype" | sed 's/\([^-]*\)-.*/\1-x-generic/')
