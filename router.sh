@@ -98,7 +98,11 @@ status_code_line() {
     case $1 in
         200) echo "$1 OK" ;;
         404) echo "$1 Not Found" ;;
+        405) echo "$1 Method Not Allowed" ;;
+        408) echo "$1 Request Timeout" ;;
         410) echo "$1 Gone" ;;
+        412) echo "$1 Precondition Failed" ;;
+        428) echo "$1 Precondition Required" ;;
         500) echo "$1 Internal Server Error" ;;
     esac
 }

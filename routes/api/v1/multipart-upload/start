@@ -1,0 +1,29 @@
+#!/bin/bash
+
+request=$1
+status_code=$4
+
+method=$(head -1 "$request" | awk '{ print $1 }')
+if [[ "$method" != "GET" ]]; then
+    printf 405 > "$status_code"
+    exit
+fi
+
+IFS=$'\r\n' read -r filename
+IFS=$'\r\n' read -r filesize
+
+chunk_size=1048576 # bytes
+upload_id=$(tr -dc A-Za-z0-9 </dev/random | head -c 8)
+n_chunks=$(( (filesize + chunk_size - 1) / chunk_size ))
+
+IFS=$'\t' echo "$upload_id" "$filename" "$filesize" "$n_chunks" >> /tmp/upload-list.txt
+
+cat <<EOF
+{
+    "upload_id": "$upload_id",
+    "chunk_size": $chunk_size,
+    "n_chunks": $n_chunks,
+}
+EOF
+
+print 200 > "$status_code"

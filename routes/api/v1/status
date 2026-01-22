@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "Ok"
+printf 200 > "$4"
