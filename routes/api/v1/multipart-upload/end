@@ -61,4 +61,4 @@ fi
 icon=~/.local/share/icons/oxygen/256x256/mimetypes/$filetype.png
 notify-send -t 2000 -i $icon "File Sharing" "Downloaded $filename"
 
-print 200 > "$status_code"
+printf 200 > "$status_code"
