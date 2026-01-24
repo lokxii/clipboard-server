@@ -95,8 +95,9 @@ construct_body() {
 }
 
 status_code_line() {
-    case $1 in
+    case "$1" in
         200) echo "$1 OK" ;;
+        400) echo "$1 Bad Request" ;;
         404) echo "$1 Not Found" ;;
         405) echo "$1 Method Not Allowed" ;;
         408) echo "$1 Request Timeout" ;;

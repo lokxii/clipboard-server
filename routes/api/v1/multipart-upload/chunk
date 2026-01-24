@@ -3,7 +3,7 @@
 request=$1
 status_code=$4
 
-if [[ ! -f /tmp/upload-list.txt ]]; then
+if [[ ! -f /tmp/clipboard-server/upload-list.txt ]]; then
     printf 428 > "$status_code"
     exit
 fi
@@ -18,7 +18,8 @@ content_length=$(grep Content-Length "$request" | cut -d' ' -f2)
 upload_id=$(grep Upload-Id "$request" | cut -d' ' -f2)
 chunk_index=$(grep Chunk-Index "$request" | cut -d' ' -f2)
 
-if ! entry=$(grep "^$upload_id " /tmp/upload-list.txt 1>/dev/null 2>/dev/null); then
+entry=$(grep "^$upload_id"$'\t' /tmp/clipboard-server/upload-list.txt 2>/dev/null)
+if [[ $? -ne 0 ]]; then
     printf 412 > "$status_code"
     exit
 fi
@@ -28,15 +29,15 @@ if [[ ! "$chunk_index" =~ ^[0-9]+$ ]]; then
     exit
 fi
 
-filename=$(echo "$entry" | cut -d'\t' -f2)
-n_chunks=$(echo "$entry" | cut -d'\t' -f4)
+filename=$(echo "$entry" | cut -d$'\t' -f2)
+n_chunks=$(echo "$entry" | cut -d$'\t' -f4)
 
 if [[ ! "$chunk_index" -lt "$n_chunks" ]]; then
     printf 400 > "$status_code"
     exit
 fi
 
-partfile=/tmp/"$filename"."$upload_id"."$chunk_index"
+partfile=/tmp/clipboard-server/"$filename"."$upload_id"."$chunk_index"
 dd ibs=1 count="$content_length" of="$partfile" 2>/dev/null
 
 received_size=$(stat -c %s "$partfile")

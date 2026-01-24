@@ -3,7 +3,7 @@
 request=$1
 status_code=$4
 
-if [[ ! -f /tmp/upload-list.txt ]]; then
+if [[ ! -f /tmp/clipboard-server/upload-list.txt ]]; then
     printf 428 > "$status_code"
     exit
 fi
@@ -16,20 +16,21 @@ fi
 
 upload_id=$(grep Upload-Id "$request" | cut -d' ' -f2)
 
-if ! entry=$(grep "^$upload_id " /tmp/upload-list.txt 1>/dev/null 2>/dev/null); then
+entry=$(grep "^$upload_id"$'\t' /tmp/clipboard-server/upload-list.txt 2>/dev/null)
+if [[ $? -ne 0 ]]; then
     printf 412 > "$status_code"
     exit
 fi
 
-filename=$(echo "$entry" | cut -d'\t' -f2)
-filesize=$(echo "$entry" | cut -d'\t' -f3)
-n_chunks=$(echo "$entry" | cut -d'\t' -f4)
+filename=$(echo "$entry" | cut -d$'\t' -f2)
+filesize=$(echo "$entry" | cut -d$'\t' -f3)
+n_chunks=$(echo "$entry" | cut -d$'\t' -f4)
 
 mapfile -t parts <<<"$(
-    find /tmp -maxdepth 1 -name "$filename"."$upload_id".'*' |
-    awk '{print $NF,$0}' |
+    find /tmp/clipboard-server/ -maxdepth 1 -name "$filename"."$upload_id".'*' |
+    awk -F'.' '{print $NF,$0}' |
     sort -n |
-    cut -f2- d' '
+    cut -f2- -d' '
 )"
 
 if [[ ${#parts[@]} -ne $n_chunks ]]; then
@@ -52,7 +53,7 @@ if [[ "$concated_size" -ne "$filesize" ]]; then
 fi
 
 rm "${parts[@]}"
-sed '/^'"$upload_id"'/d' /tmp/upload-list.txt
+sed '/^'"$upload_id"'/d' /tmp/clipboard-server/upload-list.txt
 
 filetype=$(file --mime-type ~/Downloads/$filename | cut -d' ' -f2 | tr '/' '-')
 if [[ ! -e ~/.local/share/icons/oxygen/256x256/mimetypes/$filetype.png ]]; then

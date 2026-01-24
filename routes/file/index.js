@@ -1,18 +1,3 @@
-{
-    let elem = document.getElementById("form-select-file")
-    elem.addEventListener(
-        "input",
-        (_) => {
-            let filename = elem.files[0].name;
-            filename = filename.length < 15 ? filename : filename.slice(0, 15) + '...';
-            let fragment = create_element(
-                '<button id="upload" type="button" onclick="upload()">' +
-                    'Upload<br>' + filename +
-                '</button>');
-            document.getElementById("select-file").replaceWith(fragment);
-        });
-}
-
 /**
  * @param {string} htmlStr
  */
@@ -27,7 +12,7 @@ function create_element(htmlStr) {
 }
 
 function select_file() {
-    document.getElementById("form-select-file").click();
+    document.getElementById("file-selector").click();
 }
 
 function upload_progress_fragment() {
@@ -54,35 +39,144 @@ function select_file_fragment() {
     );
 }
 
+/** @type {File | null} */
+let file = null;
+
+document.getElementById("file-selector").onchange = (ev) => {
+    file = ev.target.files[0]
+    let filename = file.name.length < 15 ?
+        file.name :
+        file.name.slice(0, 15) + '...';
+    let fragment = create_element(
+        '<button id="upload" type="button" onclick="upload()">' +
+            'Upload<br>' + filename +
+        '</button>');
+    document.getElementById("select-file").replaceWith(fragment);
+}
+
+async function initiate_upload() {
+    try {
+        let r = await fetch("/api/v1/multipart-upload/start", {
+            method: "POST",
+            body: `${file.name}\r\n${file.size}\r\n`,
+        });
+        return await r.json();
+    } catch (err) {
+        console.log(err);
+        alert("Cannot initiate file upload");
+        file = null;
+        document.getElementById("upload").replaceWith(select_file_fragment());
+        throw null;
+    }
+}
+
 function upload() {
     let uploadButton = document.getElementById("upload");
     uploadButton.append(upload_progress_fragment());
     uploadButton.disabled = true;
-
     let progress = document.getElementById("upload-progress");
-    let xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/v1/upload");
-    xhr.setRequestHeader("Content-Type", "multipart/form-data");
-    xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-            progress.value = event.loaded / event.total;
+
+    setTimeout(async () => {
+        /** @type {{upload_id: string, chunk_size: number, n_chunks: number}} */
+        const {
+            upload_id: upload_id,
+            chunk_size: chunk_size,
+            n_chunks: n_chunks
+        } = await initiate_upload();
+        /** @type {number[]} */
+        let uploaded_bytes = Array(n_chunks).fill(0);
+        let sent_chunks = 0;
+
+        let reader = new FileReader();
+        reader.onload = (_) => {
+            let content = reader.result;
+
+            const onfinish = () => {
+                progress.remove();
+                uploadButton.replaceWith(select_file_fragment());
+
+                if (uploaded_bytes.reduce((x, v) => x + v, 0) !== content.byteLength) {
+                    alert("Upload failed");
+                }
+                let xhr = new XMLHttpRequest();
+                xhr.open("POST", "/api/v1/multipart-upload/end");
+                xhr.setRequestHeader("Upload-Id", upload_id);
+                xhr.onloadend = (_) => {
+                    if (xhr.readyState !== 4) {
+                        return;
+                    }
+                    switch (xhr.status) {
+                        case 200: break;
+                        case 500: alert("Upload failed (server error)"); break;
+                    }
+                };
+                xhr.onerror = (_) => {
+                    alert("Network error; Cannot confirm upload status");
+                }
+                xhr.send();
+            };
+
+            for (let i = 0; i < n_chunks; i++) {
+                let end = (i + 1) * chunk_size;
+                end = end < content.byteLength ? end : content.byteLength;
+                const slice = content.slice(i * chunk_size, end);
+
+                const update_progress_bar = () => {
+                    progress.value = uploaded_bytes.reduce((x, v) => x + v, 0) / content.byteLength
+                };
+                const send_chunk = () => {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open("PUT", "/api/v1/multipart-upload/chunk");
+                    xhr.setRequestHeader("Upload-Id", upload_id);
+                    xhr.setRequestHeader("Chunk-Index", i.toString());
+                    xhr.upload.onprogress = (ev) => {
+                        if (ev.lengthComputable) {
+                            uploaded_bytes[i] = ev.loaded;
+                            update_progress_bar();
+                        }
+                    };
+                    xhr.onloadend = (ev) => {
+                        if (xhr.readyState !== 4) {
+                            return;
+                        }
+                        switch (xhr.status) {
+                            case 200:
+                                sent_chunks += 1;
+                                if (sent_chunks === n_chunks) {
+                                    onfinish();
+                                }
+                                break;
+                            case 428: console.log("Didn't call /api/v1/multipart-upload/start ?"); break;
+                            case 405: console.log("Not PUT request; Shouldn't happen"); break;
+                            case 412: console.log("Incorrect upload-id"); break;
+                            case 400: console.log("Invalid chunk-index"); break;
+                            case 408:
+                                console.log("Chunk upload failed; Retrying");
+                                uploaded_bytes[i] = 0
+                                update_progress_bar();
+                                send_chunk();
+                                break;
+                        }
+                    };
+                    xhr.onerror = (ev) => {
+                        console.log("Chunk upload failed (error); Retrying");
+                        uploaded_bytes[i] = 0
+                        progress.value = uploaded_bytes.reduce((x, v) => x + v, 0) / content.byteLength;
+                        send_chunk();
+                    }
+                    xhr.send(slice);
+                };
+                send_chunk();
+            }
         }
-    });
-    xhr.addEventListener("loadend", (ev) => {
-        if (xhr.readyState === 4) {
-            progress.remove();
-            uploadButton.replaceWith(select_file_fragment());
-        } else {
-            console.log(xhr.readyState)
-            return;
+        reader.onerror = (_) => {
+            alert("Cannot read file");
+            file = null;
+            document.getElementById("upload").replaceWith(select_file_fragment());
+            throw null;
         }
+        reader.readAsArrayBuffer(file);
     });
-    xhr.addEventListener("error", () => {
-        alert("Upload failed");
-        return;
-    });
-    const formData = new FormData(document.getElementById("upload-form"));
-    xhr.send(formData);
 }
 
 function download() {
@@ -126,5 +220,4 @@ function download() {
         }
     });
     xhr.send();
-
 }
