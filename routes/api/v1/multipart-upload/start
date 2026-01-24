@@ -12,7 +12,7 @@ fi
 IFS=$'\r\n' read -r filename
 IFS=$'\r\n' read -r filesize
 
-chunk_size=3145728 # bytes
+chunk_size=1048576 # bytes
 upload_id=$(tr -dc A-Za-z0-9 </dev/random | head -c 8)
 n_chunks=$(( (filesize + chunk_size - 1) / chunk_size ))
 
@@ -26,4 +26,4 @@ cat <<EOF
 }
 EOF
 
-printf 200 > "$status_code"
+print 200 > "$status_code"

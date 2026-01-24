@@ -13,7 +13,7 @@
                 position: fixed;
             }
 
-            input {
+            form {
                 display: none;
             }
 
@@ -68,7 +68,9 @@
         <h1>File Sharing</h1>
         <div id="content">
             <div class="container">
-                <input type="file" id="file-selector" name="file" />
+                <form id="upload-form" action="/api/v1/upload" method="POST" enctype="multipart/form-data">
+                    <input type="file" id="form-select-file" name="file" />
+                </form>
                 <button id="select-file" type="button" onclick="select_file()">
                     Select File
                 </button>
