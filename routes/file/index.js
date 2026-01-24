@@ -161,7 +161,7 @@ function upload() {
                     xhr.onerror = (ev) => {
                         console.log("Chunk upload failed (error); Retrying");
                         uploaded_bytes[i] = 0
-                        progress.value = uploaded_bytes.reduce((x, v) => x + v, 0) / content.byteLength;
+                        update_progress_bar();
                         send_chunk();
                     }
                     xhr.send(slice);
