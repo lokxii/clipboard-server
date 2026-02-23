@@ -1,4 +1,8 @@
 #!/bin/bash
 
 wl-paste
+
+icon=$BASE/routes/images/favicon.jpg
+notify-send -t 2000 -i "$icon" "Clipboard Server" "Copied from computer"
+
 printf 200 > "$4"
